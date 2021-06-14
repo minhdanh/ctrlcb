@@ -74,7 +74,7 @@ func processItems(clipboardContent, currentWorkingDirectory string, keepSourcePa
 }
 
 func copyFileOrDir(sourceWorkingDirectory, sourcePath, currentWorkingDirectory string, keepSourcePath, overwrite bool) (err error) {
-	path := sourcePath
+	absSourcePath := sourcePath
 	log.Printf("Path: %v", sourcePath)
 	if filepath.IsAbs(sourcePath) {
 		log.Printf("%v is an absolute path", sourcePath)
@@ -82,13 +82,13 @@ func copyFileOrDir(sourceWorkingDirectory, sourcePath, currentWorkingDirectory s
 			return fmt.Errorf("cannot use -k with absolute path %v", sourcePath)
 		}
 	} else {
-		path = filepath.Join(sourceWorkingDirectory, path)
+		absSourcePath = filepath.Join(sourceWorkingDirectory, absSourcePath)
 	}
 
-	log.Printf("Path: %v", path)
-	_, err = os.Stat(path)
+	log.Printf("Path: %v", absSourcePath)
+	_, err = os.Stat(absSourcePath)
 	if os.IsNotExist(err) {
-		return fmt.Errorf("source file or directory %v does not exist", path)
+		return fmt.Errorf("source file or directory %v does not exist", absSourcePath)
 	}
 
 	name := filepath.Base(sourcePath)
@@ -114,10 +114,10 @@ func copyFileOrDir(sourceWorkingDirectory, sourcePath, currentWorkingDirectory s
 			return strings.HasSuffix(src, ".git"), nil
 		},
 	}
-	err = copy.Copy(sourcePath, target, opt)
+	err = copy.Copy(absSourcePath, target, opt)
 	if err != nil {
 		return err
 	}
-	log.Printf("Copied %v to %v", sourcePath, target)
+	log.Printf("Copied %v to %v", absSourcePath, target)
 	return nil
 }
