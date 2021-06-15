@@ -2,11 +2,11 @@
 
 # ctrlcb
 
-A tool to help copy files or directories without having to type the full paths of the source and destination, by utilizing the clipboard to store the source paths. Think of `Ctrl + c` and `Ctrl + v` to copy files, but using command line. Yes we have `cp` command to do this but in some cases typing the long source and destination paths is really tedious.
+A tool to help copy files or directories without having to type the full paths of the source and destination, by utilizing the clipboard to store the source paths. Think of `Ctrl + c` and `Ctrl + v` to copy files, but using command line. Yes we have `cp` command to do this but in some cases typing the long source and destination paths is really tedious. This is useful when you already have terminals opened on the source and destination directories.
 
 ## Installation
 
-There're two commands to install: `ctrlcb-copy` to copy paths to clipboard, and `ctrlcb-paste` to actually copy the files (or directories) to your current working directory:
+There're two commands to install: `ctrlcb-copy` to copy paths to clipboard, and `ctrlcb-paste` to paste the files (or directories) to your current working directory:
 (You need `go` to be installed on your machine first)
 
 ```
