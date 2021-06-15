@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/atotto/clipboard"
-	functions "github.com/minhdanh/ctrlcb/internal"
+	cb "github.com/minhdanh/ctrlcb/pkg/clipboard"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	}
 	fmt.Printf("Current working directory: %s\n", cwd)
 
-	clipboardContent := "# ctrlcb"
+	clipboardContent := cb.ClipboardMarker
 
 	copiedPaths := 0
 	for i := 0; i < len(args); i++ {
@@ -44,7 +44,10 @@ func main() {
 		}
 
 		itemAdded := false
-		clipboardContent, itemAdded = functions.AddClipboardItem(clipboardContent, cwd, args[i])
+		clipboardContent, itemAdded, err = cb.AddClipboardItem(clipboardContent, cwd, args[i])
+		if err != nil {
+			panic(err)
+		}
 		if itemAdded {
 			copiedPaths++
 		}

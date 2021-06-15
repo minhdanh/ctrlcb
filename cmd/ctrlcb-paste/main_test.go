@@ -1,4 +1,4 @@
-package main
+package main_test
 
 import (
 	"io/ioutil"
@@ -8,13 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	functions "github.com/minhdanh/ctrlcb/internal"
+	. "github.com/minhdanh/ctrlcb/cmd/ctrlcb-paste"
+	cb "github.com/minhdanh/ctrlcb/pkg/clipboard"
 )
-
-// var keepSourcePath = flag.Bool("k", false, "keep the relative source path - create directories on destination directory if needed")
-
-// // removeSource = flag.Bool("x", false, "remove the source file or directory")
-// var overwrite = flag.Bool("f", false, "overwrite the destination file or directory if it already exists")
 
 // func TestMain(m *testing.M) {
 // 	flag.Parse()
@@ -23,22 +19,12 @@ import (
 // 	os.Exit(code)
 // }
 
-// func init() {
-// 	// clipboard.Debug = true
-// }
-
-// func teardown(m *testing.M) {
-// 	// os.RemoveAll("test/data/case03/case01")
-// 	// os.RemoveAll("test/data.copy")
-// 	// os.RemoveAll("test/data.copyTime")
-// }
-
 func TestInvalidClipboardContent(t *testing.T) {
 	currentWorkingDirectory := t.TempDir()
 	expected := 0
 	clipboardContent := "invalid"
 
-	actual := processItems(clipboardContent, currentWorkingDirectory, false, false)
+	actual := ProcessClipboardContent(clipboardContent, currentWorkingDirectory, false, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
@@ -56,31 +42,31 @@ func TestCopyFile_AbsolutePath(t *testing.T) {
 
 	// should copy abs path without -k
 	expected := 1
-	clipboardContent := "# ctrlcb"
-	clipboardContent, _ = functions.AddClipboardItem(clipboardContent, sourceWorkingDirectory, tmpFile.Name())
+	clipboardContent := cb.ClipboardMarker
+	clipboardContent, _, _ = cb.AddClipboardItem(clipboardContent, sourceWorkingDirectory, tmpFile.Name())
 
-	actual := processItems(clipboardContent, targetWorkingDirectory, false, false)
+	actual := ProcessClipboardContent(clipboardContent, targetWorkingDirectory, false, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should not copy abs path with -k
 	expected = 0
-	actual = processItems(clipboardContent, targetWorkingDirectory, true, false)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, true, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should not overwrite file
 	expected = 0
-	actual = processItems(clipboardContent, targetWorkingDirectory, false, false)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, false, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should overwrite file
 	expected = 1
-	actual = processItems(clipboardContent, targetWorkingDirectory, false, true)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, false, true)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
@@ -88,8 +74,6 @@ func TestCopyFile_AbsolutePath(t *testing.T) {
 
 func TestCopyFile_RelativePathTarget(t *testing.T) {
 	sourceWorkingDirectory := t.TempDir()
-	// sourcePath := filepath.Join(sourceWorkingDirectory, "a/b/c")
-	// os.MkdirAll(sourcePath, os.ModePerm)
 	tmpFileT, err := ioutil.TempFile(sourceWorkingDirectory, "test-")
 	if err != nil {
 		log.Fatal("Cannot create temporary file", err)
@@ -103,46 +87,46 @@ func TestCopyFile_RelativePathTarget(t *testing.T) {
 		log.Fatal("Cannot create relative path", err)
 	}
 
-	clipboardContent := "# ctrlcb"
-	clipboardContent, _ = functions.AddClipboardItem(clipboardContent, sourceWorkingDirectory, relativeFilePathT)
+	clipboardContent := cb.ClipboardMarker
+	clipboardContent, _, _ = cb.AddClipboardItem(clipboardContent, sourceWorkingDirectory, relativeFilePathT)
 
 	expected := 1
-	actual := processItems(clipboardContent, targetWorkingDirectory, false, false)
+	actual := ProcessClipboardContent(clipboardContent, targetWorkingDirectory, false, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should not overwrite file created in previous assertion
 	expected = 0
-	actual = processItems(clipboardContent, targetWorkingDirectory, false, false)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, false, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should overwrite file created in previous assertion
 	expected = 1
-	actual = processItems(clipboardContent, targetWorkingDirectory, false, true)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, false, true)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should copy with source path with -k
 	expected = 1
-	actual = processItems(clipboardContent, targetWorkingDirectory, true, false)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, true, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should not overwrite file created in previous assertion
 	expected = 0
-	actual = processItems(clipboardContent, targetWorkingDirectory, true, false)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, true, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should overwrite file created in previous assertion
 	expected = 1
-	actual = processItems(clipboardContent, targetWorkingDirectory, true, true)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, true, true)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
@@ -156,8 +140,6 @@ func TestCopyFile_RelativePathTarget(t *testing.T) {
 
 func TestCopyFile_RelativePathSource(t *testing.T) {
 	sourceWorkingDirectory := t.TempDir()
-	// sourcePath := filepath.Join(sourceWorkingDirectory, "a/b/c")
-	// os.MkdirAll(sourcePath, os.ModePerm)
 	tmpFileS, err := ioutil.TempFile(sourceWorkingDirectory, "test-")
 	if err != nil {
 		log.Fatal("Cannot create temporary file", err)
@@ -173,39 +155,39 @@ func TestCopyFile_RelativePathSource(t *testing.T) {
 	targetWorkingDirectory := t.TempDir()
 	os.Chdir(targetWorkingDirectory)
 
-	clipboardContent := "# ctrlcb"
-	clipboardContent, _ = functions.AddClipboardItem(clipboardContent, sourceWorkingDirectory, relativeFilePathS)
+	clipboardContent := cb.ClipboardMarker
+	clipboardContent, _, _ = cb.AddClipboardItem(clipboardContent, sourceWorkingDirectory, relativeFilePathS)
 
 	expected := 1
-	actual := processItems(clipboardContent, targetWorkingDirectory, false, false)
+	actual := ProcessClipboardContent(clipboardContent, targetWorkingDirectory, false, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should not overwrite file created in previous assertion
 	expected = 0
-	actual = processItems(clipboardContent, targetWorkingDirectory, false, false)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, false, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should overwrite file created in previous assertion
 	expected = 1
-	actual = processItems(clipboardContent, targetWorkingDirectory, false, true)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, false, true)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should not copy with source path with -k as there's no directory in path
 	expected = 0
-	actual = processItems(clipboardContent, targetWorkingDirectory, true, false)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, true, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
 	// should overwrite file created in previous assertion
 	expected = 1
-	actual = processItems(clipboardContent, targetWorkingDirectory, true, true)
+	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, true, true)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
