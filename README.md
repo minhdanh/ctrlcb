@@ -1,0 +1,1 @@
+[![codecov](https://codecov.io/gh/minhdanh/ctrlcb/branch/master/graph/badge.svg?token=F41311IRII)](https://codecov.io/gh/minhdanh/ctrlcb)
