@@ -40,7 +40,7 @@ func TestCopyFile_AbsolutePath(t *testing.T) {
 	targetWorkingDirectory := t.TempDir()
 	os.Chdir(targetWorkingDirectory)
 
-	// should copy abs path without -k
+	// should copy absolute path without -k flag
 	expected := 1
 	clipboardContent := cb.ClipboardMarker
 	clipboardContent, _, _ = cb.AddClipboardItem(clipboardContent, sourceWorkingDirectory, tmpFile.Name())
@@ -50,21 +50,21 @@ func TestCopyFile_AbsolutePath(t *testing.T) {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
-	// should not copy abs path with -k
+	// should not copy absolute path with -k flag
 	expected = 0
 	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, true, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
-	// should not overwrite file
+	// should not overwrite file without -f flag
 	expected = 0
 	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, false, false)
 	if actual != expected {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
-	// should overwrite file
+	// should overwrite file with -f flag
 	expected = 1
 	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, false, true)
 	if actual != expected {
@@ -76,15 +76,16 @@ func TestCopyFile_RelativePathTarget(t *testing.T) {
 	sourceWorkingDirectory := t.TempDir()
 	tmpFileT, err := ioutil.TempFile(sourceWorkingDirectory, "test-")
 	if err != nil {
-		log.Fatal("Cannot create temporary file", err)
+		t.Fatal("Cannot create temporary file", err)
 	}
 
 	targetWorkingDirectory := t.TempDir()
 	os.Chdir(targetWorkingDirectory)
+
 	// relativeFilePathT is relative from target directory
 	relativeFilePathT, err := filepath.Rel(targetWorkingDirectory, tmpFileT.Name())
 	if err != nil {
-		log.Fatal("Cannot create relative path", err)
+		t.Fatal("Cannot create relative path", err)
 	}
 
 	clipboardContent := cb.ClipboardMarker
@@ -110,7 +111,7 @@ func TestCopyFile_RelativePathTarget(t *testing.T) {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
-	// should copy with source path with -k
+	// should copy with source path with -k flag
 	expected = 1
 	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, true, false)
 	if actual != expected {
@@ -148,9 +149,8 @@ func TestCopyFile_RelativePathSource(t *testing.T) {
 	// relativeFilePathS is relative from source directory
 	relativeFilePathS, err := filepath.Rel(sourceWorkingDirectory, tmpFileS.Name())
 	if err != nil {
-		log.Fatal("Cannot create relative path", err)
+		t.Fatal("Cannot create relative path", err)
 	}
-	log.Print(relativeFilePathS)
 
 	targetWorkingDirectory := t.TempDir()
 	os.Chdir(targetWorkingDirectory)
@@ -178,7 +178,7 @@ func TestCopyFile_RelativePathSource(t *testing.T) {
 		t.Fatalf("want %v, got %v", expected, actual)
 	}
 
-	// should not copy with source path with -k as there's no directory in path
+	// should not copy with source path with -k flag as path is just a filename
 	expected = 0
 	actual = ProcessClipboardContent(clipboardContent, targetWorkingDirectory, true, false)
 	if actual != expected {

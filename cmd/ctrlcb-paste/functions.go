@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,7 +17,7 @@ func ProcessClipboardContent(clipboardContent, currentWorkingDirectory string, k
 	for _, line := range strings.Split(strings.TrimRight(clipboardContent, "\n"), "\n") {
 		if !checkedFirstLine {
 			if line != cb.ClipboardMarker {
-				log.Printf("No file or directory paths found in clipboard. Doing nothing")
+				fmt.Printf("No file or directory paths found in clipboard. Doing nothing\n")
 				return 0
 			}
 			checkedFirstLine = true
@@ -28,18 +27,18 @@ func ProcessClipboardContent(clipboardContent, currentWorkingDirectory string, k
 		item := strings.Split(line, ":")
 		sourceWorkingDirectory, err := cb.DecodeBase64(item[0])
 		if err != nil {
-			log.Printf("Cannot decode base64 string. Error: %v", err.Error())
+			fmt.Fprintf(os.Stderr, "Cannot decode base64 string. Error: %v\n", err.Error())
 			continue
 		}
 		sourcePath, err := cb.DecodeBase64(item[1])
 		if err != nil {
-			log.Printf("Cannot decode base64 string. Error: %v", err.Error())
+			fmt.Fprintf(os.Stderr, "Cannot decode base64 string. Error: %v\n", err.Error())
 			continue
 		}
 
 		err = CopyFileOrDir(sourceWorkingDirectory, sourcePath, currentWorkingDirectory, keepSourcePath, overwrite)
 		if err != nil {
-			log.Print(err.Error())
+			fmt.Fprintln(os.Stderr, err.Error())
 			continue
 		}
 		processed++
@@ -49,17 +48,14 @@ func ProcessClipboardContent(clipboardContent, currentWorkingDirectory string, k
 
 func CopyFileOrDir(sourceWorkingDirectory, sourcePath, currentWorkingDirectory string, keepSourcePath, overwrite bool) (err error) {
 	absSourcePath := sourcePath
-	log.Printf("Path: %v", sourcePath)
 	if filepath.IsAbs(sourcePath) {
-		log.Printf("%v is an absolute path", sourcePath)
 		if keepSourcePath {
-			return fmt.Errorf("cannot use -k with absolute path %v", sourcePath)
+			return fmt.Errorf("cannot use -k flag with absolute path %v", sourcePath)
 		}
 	} else {
 		absSourcePath = filepath.Join(sourceWorkingDirectory, absSourcePath)
 	}
 
-	log.Printf("Path: %v", absSourcePath)
 	_, err = os.Stat(absSourcePath)
 	if os.IsNotExist(err) {
 		return fmt.Errorf("source file or directory %v does not exist", absSourcePath)
@@ -77,7 +73,7 @@ func CopyFileOrDir(sourceWorkingDirectory, sourcePath, currentWorkingDirectory s
 	_, err = os.Stat(target)
 	if !os.IsNotExist(err) {
 		if overwrite {
-			log.Printf("Target already exists. Overwriting")
+			fmt.Printf("Target already exists. Overwriting\n")
 		} else {
 			return errors.New("target already exists. To overwrite please use -f flag")
 		}
@@ -92,6 +88,6 @@ func CopyFileOrDir(sourceWorkingDirectory, sourcePath, currentWorkingDirectory s
 	if err != nil {
 		return err
 	}
-	log.Printf("Copied %v to %v", absSourcePath, target)
+	fmt.Printf("Copied %v to %v\n", absSourcePath, target)
 	return nil
 }

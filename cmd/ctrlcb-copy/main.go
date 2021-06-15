@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -16,7 +15,8 @@ func main() {
 	args := os.Args[1:]
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Print(err)
+		os.Exit(1)
 	}
 	fmt.Printf("Current working directory: %s\n", cwd)
 
@@ -39,7 +39,7 @@ func main() {
 		}
 		_, err := os.Stat(path)
 		if os.IsNotExist(err) {
-			log.Printf("File or directory %v does not exist.", path)
+			fmt.Printf("File or directory %v does not exist\n", path)
 			continue
 		}
 

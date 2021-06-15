@@ -26,5 +26,5 @@ func main() {
 	}
 
 	processedItems := ProcessClipboardContent(clipboardContent, currentWorkingDirectory, *keepSourcePath, *overwrite)
-	log.Printf("%v items were copied", processedItems)
+	fmt.Printf("%v items were copied\n", processedItems)
 }
