@@ -12,13 +12,6 @@ import (
 	cb "github.com/minhdanh/ctrlcb/pkg/clipboard"
 )
 
-// func TestMain(m *testing.M) {
-// 	flag.Parse()
-// 	code := m.Run()
-// 	// teardown(m)
-// 	os.Exit(code)
-// }
-
 func TestInvalidClipboardContent(t *testing.T) {
 	currentWorkingDirectory := t.TempDir()
 	expected := 0
